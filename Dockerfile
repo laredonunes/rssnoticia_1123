@@ -11,4 +11,4 @@ COPY . ./
 # Comando temporário para debugar:
 RUN ls -la /app
 
-CMD ["python", "main.py"]
+CMD ["python", "start.py"]
