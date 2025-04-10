@@ -5,7 +5,7 @@ import os
 import time
 import re
 
-# inicio =============================================================|
+# inicio =====================|
 
 
 def extrair_e_limpar_imagem(texto: str):
