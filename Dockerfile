@@ -8,4 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . ./
 
+# Comando temporário para debugar:
+RUN ls -la /app
+
 CMD ["python", "main.py"]
