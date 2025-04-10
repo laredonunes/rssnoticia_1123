@@ -3,20 +3,45 @@ import feedparser
 import json
 import os
 import time
+import re
+
+
+def extrair_e_limpar_imagem(texto: str):
+    """
+    Procura por uma tag <img> no texto, extrai a URL da imagem e retorna:
+    - texto_sem_img: o texto sem a tag <img>
+    - url_img: a URL extraída ou None se não encontrada
+    """
+    img_regex = r'<img.*?src="([^"]+)".*?>'
+    resultado = re.search(img_regex, texto, re.IGNORECASE)
+    url_img = None
+    if resultado:
+        url_img = resultado.group(1)
+        # Remove todas as ocorrências da tag <img>
+        texto = re.sub(img_regex, '', texto, flags=re.IGNORECASE).strip()
+    return texto, url_img
+
 
 def postar_noticia_discord(conteudo: str, detalhes: str):
     url_webhook = 'https://discord.com/api/webhooks/1353735159559622717/nHoIbNcAff0kAHeDxBiqDolRJfIQV4w1hK10uHs8XGSFuFUoDAUppeL5tmEw5tXxcngm'
+
+    # Extrai a imagem (se houver) e limpa o texto em cada variável
+    conteudo_limpo, url_img_conteudo = extrair_e_limpar_imagem(conteudo)
+    detalhes_limpo, url_img_detalhes = extrair_e_limpar_imagem(detalhes)
+
+    # Se encontrar a imagem em ambas, priorize uma (por exemplo, a do conteúdo)
+    url_img = url_img_conteudo or url_img_detalhes
 
     data = {
         "embeds": [
             {
                 "title": "📰 Nova Notícia",
-                "description": conteudo,
+                "description": conteudo_limpo,
                 "color": 5814783,
                 "fields": [
                     {
                         "name": "Detalhes",
-                        "value": detalhes,
+                        "value": detalhes_limpo,
                         "inline": False
                     }
                 ]
@@ -24,8 +49,11 @@ def postar_noticia_discord(conteudo: str, detalhes: str):
         ]
     }
 
-    response = requests.post(url_webhook, json=data)
+    if url_img:
+        # Adiciona a imagem ao embed do Discord
+        data["embeds"][0]["image"] = {"url": url_img}
 
+    response = requests.post(url_webhook, json=data)
     if response.status_code == 204:
         print("✅ Notícia postada com sucesso no Discord!")
     else:
@@ -66,6 +94,7 @@ def verificar_e_postar():
     for noticia in noticias:
         if noticia["id"] not in publicadas:
             conteudo = noticia["titulo"]
+
             detalhes = f"{noticia['resumo']}\n\nLeia mais: {noticia['link']}"
             postar_noticia_discord(conteudo, detalhes)
             publicadas.append(noticia["id"])
