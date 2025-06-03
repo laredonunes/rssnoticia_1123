@@ -5,7 +5,7 @@ services:
     build: .
     container_name: rss_noticia_app
     restart: always
-    env_file: .env
+    #env_file: .env
     #volumes:
     #  - .:/app
     command: ["python", "start.py"]
