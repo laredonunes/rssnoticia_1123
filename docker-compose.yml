@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: rss_noticia_app
+    restart: always
+    env_file: .env
+    #volumes:
+    #  - .:/app
+    command: ["python", "start.py"]
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
